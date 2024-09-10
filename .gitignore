@@ -1,0 +1,5 @@
+.idea
+venv
+__pycache__
+visualisation/figures
+visualisation/figures_detailed
