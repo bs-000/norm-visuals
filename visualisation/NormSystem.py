@@ -1,10 +1,12 @@
 import itertools
 import operator
+import os
 
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Rectangle
+
 
 k_nearest_norms = 3
 fig_path = 'figures/'
@@ -19,7 +21,7 @@ def get_generic_h_scale(num_levels):
     :param num_levels: Number of levels for the hierarchy
     :return: a list of levels, starting with the lowest hierarchy level
     """
-    return ['$H_{'+str(i+1)+'}$' for i in range(num_levels)]
+    return ['$H_{' + str(i + 1) + '}$' for i in range(num_levels)]
 
 
 def get_generic_dim_scale(dim, num_entries):
@@ -63,9 +65,9 @@ def annotate_norm(ax, norm, x, y, dim_one=False):
     :param y: y-coordinate for the name.
     :param dim_one: Whether it's for a one dimensional plot.
     """
-    text = '$'+norm.identifier+'$'
+    text = '$' + norm.identifier + '$'
     if dim_one:  # add starttime for one dimensional plots
-        text = r'$' + norm.identifier + r'_{\mathit{'+norm.starttime+'}}$'
+        text = r'$' + norm.identifier + r'_{\mathit{' + norm.starttime + '}}$'
     ax.annotate(text=text,
                 xy=(x, y), xytext=(x + NormSystem.annotation_offset, y),
                 verticalalignment='center', fontsize=NormSystem.fontsize)
@@ -114,38 +116,39 @@ def prepare_hierarchy_axis(ax, scale):
     :param scale: scale with names
     """
     # create scale with ticks in middle
-    ax.set_yticks([i - 0.5 for i in range(len(scale)+1)])
+    ax.set_yticks([i - 0.5 for i in range(len(scale) + 1)])
     ax.yaxis.set_tick_params(length=0)  # length 0 to hide ticks
-    ax.set_yticklabels(['']+scale, fontsize=NormSystem.fontsize)
+    ax.set_yticklabels([''] + scale, fontsize=NormSystem.fontsize)
 
     # draw deviders
-    for h in range(len(scale)+1):
+    for h in range(len(scale) + 1):
         ax.axhline(y=h, color='grey', linestyle='dotted')
 
 
-def prepare_one_axis(ax, scale, axis_label, x_axis=True):
+
+def prepare_one_axis(ax, scale, axis_label, x_axis):
     """
     Sets up an axis for plotting.
 
     :param ax: exes of the plot
     :param scale: scale with the names of the axis ticks.
     :param axis_label: Name / label of the axis
-    :param x_axis: whether this is the x-axis
+    :param x_axis: Trueif this is the x-axis, False for y-axis
     """
     if x_axis:
         ax.set_xlim((-0.5, len(scale)))
     else:
         ax.set_ylim((-0.5, len(scale)))
-    label = '$'+axis_label+'$'
+    label = '$' + axis_label + '$'
     # create scale with ticks in middle
     if x_axis:
         ax.set_xticks([i + 0.5 for i in range(len(scale))])
         ax.set_xticklabels(scale, fontsize=NormSystem.fontsize)
-        ax.set_xlabel(label, loc="right", labelpad=0, fontsize=NormSystem.fontsize)
+        ax.set_xlabel(label, loc="right", labelpad=20, fontsize=NormSystem.fontsize)
     else:
         ax.set_yticks([i + 0.5 for i in range(len(scale))])
         ax.set_yticklabels(scale, fontsize=NormSystem.fontsize)
-        ax.set_ylabel(label, loc='top', labelpad=0, rotation=0,
+        ax.set_ylabel(label, loc='top', labelpad=20, rotation=0,
                       fontsize=NormSystem.fontsize)
 
     # adjust scale so last tick isn't on arrow
@@ -216,10 +219,36 @@ def add_analogy_rectangle(ax, color, xy, width, height):
 
 
 def change_color(norm_type, color_hex):
+    """
+    Changes the color for the given normative type to the given hex code
+
+    :param norm_type: One of the three norm types
+    :param color_hex: A hexadecimal code for a color
+    """
     if norm_type in [NormSystem.type_obl, NormSystem.type_prohib, NormSystem.type_perm]:
         NormSystem.colors[norm_type] = color_hex
         NormSystem.contrary_map = {NormSystem.type_prohib: NormSystem.colors[NormSystem.type_perm],
                                    NormSystem.type_perm: NormSystem.colors[NormSystem.type_prohib]}
+
+
+def reset_colors():
+    """
+    Resets the colors of the norms to the original color setting.
+    """
+    NormSystem.colors = {NormSystem.type_obl: '#9cbad8', NormSystem.type_perm: '#fcde78',
+                         NormSystem.type_prohib: '#e66560'}
+    NormSystem.contrary_map = {NormSystem.type_prohib: NormSystem.colors[NormSystem.type_perm],
+                               NormSystem.type_perm: NormSystem.colors[NormSystem.type_prohib]}
+
+
+def create_dir(path):
+    """
+    Creates a directory if it doesn't exist yet.
+
+    :param path: The path to the directory
+    """
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 class NormSystem:
@@ -227,16 +256,17 @@ class NormSystem:
     dim_r = 'R'
     dim_s = 'S'
     dim_t = 'T'
+    hierarchy = 'H'
     type_obl = 'obligation'
     type_perm = 'permission'
     type_prohib = 'prohibition'
-    fontsize = 22
+    fontsize = 18
     dashed_linestyle = (0, (7, 5))
     linewidth = 2
     annotation_offset = 0.25
     colors = {type_obl: '#9cbad8', type_perm: '#fcde78', type_prohib: '#e66560'}
     # possible hatches: https://stackoverflow.com/questions/14279344/how-can-i-add-textures-to-my-bars-and-wedges
-    hatches = {type_obl: '**', type_perm: '/////', type_prohib: '\\\\\\\\\\'}
+    hatches = {type_obl: '*', type_perm: '//', type_prohib: '\\\\'}
     contrary_map = {type_prohib: colors[type_perm], type_perm: colors[type_prohib]}
     dimensions = [dim_o, dim_r, dim_s, dim_t]
 
@@ -256,6 +286,21 @@ class NormSystem:
         self.norm_list = []
         self.case_list = []
 
+    def get_dim_vals(self, raw_vals, dim_id):
+        """
+        From the given textual values the mathematical values are derived, the values ordered and returned.
+
+        :param raw_vals: Textual values for a dimension (two)
+        :param dim_id: The dimension.
+        :return: A list containing a tuple of mathematical and textual start and end points.
+        """
+        start, end = raw_vals
+        start_pos, end_pos = self.get_position(start, dim_id), self.get_position(end, dim_id)
+        if start_pos > end_pos:
+            start, end = end, start
+            start_pos, end_pos = end_pos, start_pos
+        return [(start, start_pos), (end, end_pos)]
+
     def add_norm(self, o_vals, r_vals, s_vals, t_vals, hierarchy, starttime, norm_type, identifier):
         """
         Method for adding a norm to the system. Inclusive for the end values.
@@ -269,18 +314,10 @@ class NormSystem:
         :param norm_type: One of the Norm types of NormSystem
         :param identifier: Name of the norm
         """
-        o_start, o_end = o_vals
-        r_start, r_end = r_vals
-        s_start, s_end = s_vals
-        t_start, t_end = t_vals
-        self.norm_list.append(Norm(o_vals=[(o_start, self.get_position(o_start, NormSystem.dim_o)),
-                                           (o_end, self.get_position(o_end, NormSystem.dim_o))],
-                                   r_vals=[(r_start, self.get_position(r_start, NormSystem.dim_r)),
-                                           (r_end, self.get_position(r_end, NormSystem.dim_r))],
-                                   s_vals=[(s_start, self.get_position(s_start, NormSystem.dim_s)),
-                                           (s_end, self.get_position(s_end, NormSystem.dim_s))],
-                                   t_vals=[(t_start, self.get_position(t_start, NormSystem.dim_t)),
-                                           (t_end, self.get_position(t_end, NormSystem.dim_t))],
+        self.norm_list.append(Norm(o_vals=self.get_dim_vals(raw_vals=o_vals, dim_id=NormSystem.dim_o),
+                                   r_vals=self.get_dim_vals(raw_vals=r_vals, dim_id=NormSystem.dim_r),
+                                   s_vals=self.get_dim_vals(raw_vals=s_vals, dim_id=NormSystem.dim_s),
+                                   t_vals=self.get_dim_vals(raw_vals=t_vals, dim_id=NormSystem.dim_t),
                                    hierarchy=(hierarchy, self.h_scale.index(hierarchy)), starttime=starttime,
                                    norm_type=norm_type,
                                    identifier=identifier))
@@ -297,13 +334,35 @@ class NormSystem:
                             in the NormSystem
         """
         if identifier is None:
-            identifier = r'$\mathfrak{C}_{'+str(len(self.case_list)+1)+'}$'
+            case_id = 1
+            identifier = r'$\mathfrak{C}_{' + str(case_id) + '}$'
+            case_names = [case.identifier for case in self.case_list]
+            while identifier in case_names:
+                case_id += 1
+                identifier = r'$\mathfrak{C}_{' + str(case_id) + '}$'
+
         self.case_list.append(Case(o_val=(o_val, self.get_position(o_val, NormSystem.dim_o)),
                                    r_val=(r_val, self.get_position(r_val, NormSystem.dim_r)),
                                    s_val=(s_val, self.get_position(s_val, NormSystem.dim_s)),
                                    t_val=(t_val, self.get_position(t_val, NormSystem.dim_t)),
                                    identifier=identifier
                                    ))
+
+    def delete_norm(self, norm):
+        """
+        Deletes a norm from the list of norms.
+
+        :param norm: The norm to delete.
+        """
+        self.norm_list.remove(norm)
+
+    def delete_case(self, case):
+        """
+        Deletes a case from the list of cases.
+
+        :param case: The case to delete.
+        """
+        self.case_list.remove(case)
 
     def get_relevant_norms(self):
         """
@@ -314,7 +373,7 @@ class NormSystem:
         :return: a set of all relevant norms.
         """
         for norm in self.norm_list:
-            norm.outside_cases=[]
+            norm.outside_cases = []
         result_list = set()
         for case in self.case_list:
             fitting_norms = []
@@ -379,9 +438,9 @@ class NormSystem:
         relevant_norms = self.get_relevant_norms_sorted_by_hierarchy()
         for norms in relevant_norms:
             num_norms = len(norms)
-            offset = 1 / (num_norms+1)
+            offset = 1 / (num_norms + 1)
             for i in range(len(norms)):
-                current_offset = offset*(i+1)
+                current_offset = offset * (i + 1)
                 norm = norms[i]
                 norm_color = NormSystem.colors[norm.norm_type]
                 y_position = norm.hierarchy[1] + current_offset
@@ -390,7 +449,7 @@ class NormSystem:
                           linewidth=NormSystem.linewidth)
 
                 # dashed lines from axes
-                dashes_lines_x_points = [norm.start_values[dim][1], norm.end_values[dim][1]+1]
+                dashes_lines_x_points = [norm.start_values[dim][1], norm.end_values[dim][1] + 1]
 
                 x_start_line = x_min = norm.start_values[dim][1]
                 x_end_line = x_max = norm.end_values[dim][1] + 1
@@ -406,10 +465,10 @@ class NormSystem:
                         dashes_lines_x_points.append(x_max)
 
                     if norm.norm_type in NormSystem.contrary_map:
-                        add_arrow(ax, start=(x_start_line, y_position-(0.3*offset)),
-                                  length=(x_min-x_start_line, 0),
+                        add_arrow(ax, start=(x_start_line, y_position - (0.3 * offset)),
+                                  length=(x_min - x_start_line, 0),
                                   color=NormSystem.contrary_map[norm.norm_type])
-                        add_arrow(ax, start=(x_end_line, y_position-(0.3*offset)),
+                        add_arrow(ax, start=(x_end_line, y_position - (0.3 * offset)),
                                   length=(x_max - x_end_line, 0),
                                   color=NormSystem.contrary_map[norm.norm_type])
 
@@ -427,7 +486,7 @@ class NormSystem:
         ax.spines[['top', 'right', 'left']].set_visible(False)
         ax.spines[['bottom']].set_linewidth(NormSystem.linewidth)
         ax.set_xlim((-0.5, len(scale)))
-        prepare_one_axis(scale=scale, axis_label=dim, ax=ax)
+        prepare_one_axis(scale=scale, axis_label=dim, ax=ax, x_axis=True)
         prepare_hierarchy_axis(scale=self.h_scale, ax=ax)
 
     def draw_two_dim_subplot(self, ax, dim_x, dim_y, detailed):
@@ -447,6 +506,7 @@ class NormSystem:
         annotate_cases(ax, annotations)
 
         # norms
+        norm_annotations = {}
         for norm in self.get_relevant_norms():
             norm_color = NormSystem.colors[norm.norm_type]
 
@@ -456,9 +516,12 @@ class NormSystem:
                                    facecolor='none',
                                    hatch=NormSystem.hatches[norm.norm_type], linewidth=NormSystem.linewidth,
                                    edgecolor=norm_color))
-            annotate_norm(ax=ax, norm=norm, x=norm.end_values[dim_x][1] + 1,
-                          y=norm.start_values[dim_y][1] + (norm.end_values[dim_y][1] + 1 -
-                                                           norm.start_values[dim_y][1]) / 2)
+            x, y = norm.end_values[dim_x][1] + 1, norm.start_values[dim_y][1] + (norm.end_values[dim_y][1] + 1 -
+                                                                                 norm.start_values[dim_y][1]) / 2
+            if (x, y) not in norm_annotations:
+                norm_annotations[(x, y)] = [norm]
+            else:
+                norm_annotations[(x, y)].append(norm)
 
             # dashed lines from axes
             dashed_y_start = norm.start_values[dim_y][1]
@@ -485,12 +548,12 @@ class NormSystem:
                         for x in range(x_min, x_max):
                             # offsets are for the corners
                             y_offset = 0
-                            if x > x_end_rect-1:  # on the right
-                                y_offset = -0.5 + min(y_max-y_end_rect, x-(x_end_rect-1))
+                            if x > x_end_rect - 1:  # on the right
+                                y_offset = -0.5 + min(y_max - y_end_rect, x - (x_end_rect - 1))
                             if x < x_start_rect:  # on the left
                                 y_offset = -0.5 + min(y_max - y_end_rect, x_start_rect - x)
-                            add_arrow(ax, start=(x+0.5, y_end_rect+y_offset),
-                                      length=(0, y_max - y_end_rect-y_offset),
+                            add_arrow(ax, start=(x + 0.5, y_end_rect + y_offset),
+                                      length=(0, y_max - y_end_rect - y_offset),
                                       color=NormSystem.contrary_map[norm.norm_type])
                     # bottom
                     if y_min < y_start_rect:
@@ -500,8 +563,8 @@ class NormSystem:
                                 y_offset = -0.5 + min(y_start_rect - y_min, x - (x_end_rect - 1))
                             if x < x_start_rect:  # on the left
                                 y_offset = -0.5 + min(y_start_rect - y_min, x_start_rect - x)
-                            add_arrow(ax, start=(x+0.5, y_start_rect-y_offset),
-                                      length=(0, y_min - y_start_rect+y_offset),
+                            add_arrow(ax, start=(x + 0.5, y_start_rect - y_offset),
+                                      length=(0, y_min - y_start_rect + y_offset),
                                       color=NormSystem.contrary_map[norm.norm_type])
                     # right
                     if x_max > x_end_rect:
@@ -511,8 +574,8 @@ class NormSystem:
                                 x_offset = -0.5 + min(x_max - x_end_rect, y - (y_end_rect - 1))
                             if y < y_start_rect:  # at the bottom
                                 x_offset = - 0.5 + min(x_max - x_end_rect, y_start_rect - y)
-                            add_arrow(ax, start=(x_end_rect+x_offset, y + 0.5),
-                                      length=(x_max - x_end_rect-x_offset, 0),
+                            add_arrow(ax, start=(x_end_rect + x_offset, y + 0.5),
+                                      length=(x_max - x_end_rect - x_offset, 0),
                                       color=NormSystem.contrary_map[norm.norm_type])
                     # left
                     if x_min < x_start_rect:
@@ -522,8 +585,8 @@ class NormSystem:
                                 x_offset = -0.5 + min(x_start_rect - x_min, y - (y_end_rect - 1))
                             if y < y_start_rect:  # at the bottom
                                 x_offset = - 0.5 + min(x_start_rect - x_min, y_start_rect - y)
-                            add_arrow(ax, start=(x_start_rect-x_offset, y + 0.5),
-                                      length=(x_min - x_start_rect+x_offset, 0),
+                            add_arrow(ax, start=(x_start_rect - x_offset, y + 0.5),
+                                      length=(x_min - x_start_rect + x_offset, 0),
                                       color=NormSystem.contrary_map[norm.norm_type])
 
                     dashed_y_start = y_min
@@ -551,63 +614,115 @@ class NormSystem:
                 for x_point in dashes_lines_x_points:
                     add_dashed_v_line(ax=ax, x=x_point, y_end=dashed_y_start)
 
+        for key in norm_annotations.keys():
+            norms = norm_annotations[key]
+            x, y = key
+            for i in range(len(norms)):
+                annotate_norm(ax=ax, norm=norms[i], x=x, y=y+(i*0.075))
+
         # arrows on axes
         ax.plot(0, 1, '^k', transform=ax.transAxes, clip_on=False)
         ax.plot(1, 0, '>k', transform=ax.transAxes, clip_on=False)
         ax.spines[['top', 'right']].set_visible(False)
         ax.spines[['bottom', 'left']].set_linewidth(NormSystem.linewidth)
-        prepare_one_axis(scale=self.scales[dim_x], axis_label=dim_x, ax=ax)
+        prepare_one_axis(scale=self.scales[dim_x], axis_label=dim_x, ax=ax, x_axis=True)
         prepare_one_axis(scale=self.scales[dim_y], axis_label=dim_y, ax=ax, x_axis=False)
 
-    def draw_dims_one(self, saveidentifier, detailed):
+    def draw_dims_one_all(self, detailed, figure=None, saveidentifier=None):
         """
         Coordinates drawing figures for one dimenions each.
 
         :param saveidentifier: an identifier to include in the name of the saved file.
+        :param figure: figure to use for plotting
         :param detailed:  Whether to draw the detailled version of the figures.
         """
-        if detailed:
-            savename = fig_path_detailes + saveidentifier + '_dims_one.png'
+        if saveidentifier is not None:
+            fig = plt.figure(figsize=(15, 10))
         else:
-            savename = fig_path + saveidentifier + '_dims_one.png'
+            fig = figure
+
+        if fig is not None:
+            matplotlib.rcParams['mathtext.fontset'] = 'cm'
+            ax1 = fig.add_subplot(221)  # Plot with: 4 rows, 1 column
+            self.draw_one_dim_subplot(ax1, NormSystem.dim_o, detailed)
+            ax2 = fig.add_subplot(222)
+            self.draw_one_dim_subplot(ax2, NormSystem.dim_r, detailed)
+            ax3 = fig.add_subplot(223)
+            self.draw_one_dim_subplot(ax3, NormSystem.dim_s, detailed)
+            ax4 = fig.add_subplot(224)
+            self.draw_one_dim_subplot(ax4, NormSystem.dim_t, detailed)
+
+            fig.tight_layout()
+        if saveidentifier is not None:
+            if detailed:
+                create_dir(fig_path_detailes)
+                savename = fig_path_detailes + saveidentifier + '_dims_one.png'
+            else:
+                create_dir(fig_path)
+                savename = fig_path + saveidentifier + '_dims_one.png'
+            plt.savefig(savename)
+            plt.close()
+
+    def draw_dims_one(self, detailed, x_dim, fig):
+        """
+        Coordinates drawing figures for one dimenions each.
+
+        :param x_dim: dimension to display on x-axis
+        :param fig: figure to use for plotting
+        :param detailed:  Whether to draw the detailled version of the figures.
+        """
         matplotlib.rcParams['mathtext.fontset'] = 'cm'
-        fig = plt.figure(figsize=(10, 20))  # (15,30) also good
-        ax1 = fig.add_subplot(411)  # Plot with: 4 rows, 1 column
-        self.draw_one_dim_subplot(ax1, NormSystem.dim_o, detailed)
-        ax2 = fig.add_subplot(412)
-        self.draw_one_dim_subplot(ax2, NormSystem.dim_r, detailed)
-        ax3 = fig.add_subplot(413)
-        self.draw_one_dim_subplot(ax3, NormSystem.dim_s, detailed)
-        ax4 = fig.add_subplot(414)
-        self.draw_one_dim_subplot(ax4, NormSystem.dim_t, detailed)
+        ax1 = fig.add_subplot(111)
+        self.draw_one_dim_subplot(ax1, x_dim, detailed)
 
         fig.tight_layout()
-        plt.savefig(savename)
-        plt.close()
 
-    def draw_dims_two(self, dims_one, dims_two, saveidentifier, detailed):
+    def draw_dims_two(self, dim_x, dim_y, detailed, fig):
         """
         Coordinates drawing figures for two dimenions each.
 
-        :param dims_one: (dim_x, dim_y) for first plot (from NormSystem.dimensions)
-        :param dims_two: (dim_x, dim_y) for second plot (from NormSystem.dimensions)
+        :param dim_x: x axis (from NormSystem.dimensions)
+        :param dim_y: y axis (from NormSystem.dimensions)
+        :param fig: figure for plotting
+        :param detailed: Whether to draw the detailled version of the figures.
+        """
+        matplotlib.rcParams['mathtext.fontset'] = 'cm'
+        ax1 = fig.add_subplot(111)  # Plot with: 1 row, 2 column, first subplot.
+        self.draw_two_dim_subplot(ax1, dim_x, dim_y, detailed)
+        fig.tight_layout()
+
+    def draw_dims_two_all(self, dims_one, dims_two, detailed, saveidentifier=None, figure=None):
+        """
+        Coordinates drawing figures for two dimenions each.
+
+        :param dims_one: (dim_x_str, dim_y_str) for first plot (from NormSystem.dimensions)
+        :param dims_two: (dim_x_str, dim_y_str) for second plot (from NormSystem.dimensions)
+        :param figure: figure for plotting
         :param saveidentifier: an identifier to include in the name of the saved file.
         :param detailed: Whether to draw the detailled version of the figures.
         """
-        if detailed:
-            savename = fig_path_detailes+saveidentifier+'_dims_two.png'
+        if saveidentifier is not None:
+            fig = plt.figure(figsize=(20, 10))
         else:
-            savename = fig_path + saveidentifier + '_dims_two.png'
-        matplotlib.rcParams['mathtext.fontset'] = 'cm'
-        fig = plt.figure(figsize=(20, 10))
-        ax1 = fig.add_subplot(121)  # Plot with: 1 row, 2 column, first subplot.
-        self.draw_two_dim_subplot(ax1, dims_one[0], dims_one[1], detailed)
-        ax2 = fig.add_subplot(122)  # Plot with: 1 row, 2 column, second subplot.
-        self.draw_two_dim_subplot(ax2, dims_two[0], dims_two[1], detailed)
+            fig = figure
+        if fig is not None:
+            matplotlib.rcParams['mathtext.fontset'] = 'cm'
+            ax1 = fig.add_subplot(121)  # Plot with: 1 row, 2 column, first subplot.
+            self.draw_two_dim_subplot(ax1, dims_one[0], dims_one[1], detailed)
+            ax2 = fig.add_subplot(122)  # Plot with: 1 row, 2 column, second subplot.
+            self.draw_two_dim_subplot(ax2, dims_two[0], dims_two[1], detailed)
 
-        fig.tight_layout()
-        plt.savefig(savename)
-        plt.close()
+            fig.tight_layout()
+        if saveidentifier is not None:
+            if detailed:
+                create_dir(fig_path_detailes)
+                savename = fig_path_detailes + saveidentifier + '_dims_two.png'
+            else:
+                create_dir(fig_path)
+                savename = fig_path + saveidentifier + '_dims_two.png'
+
+            plt.savefig(savename)
+            plt.close()
 
     def reset(self):
         """
@@ -621,6 +736,7 @@ class Case:
     """
     Class for one case.
     """
+
     def __init__(self, o_val, r_val, s_val, t_val, identifier):
         """
         Initializes the attributes.
@@ -668,8 +784,10 @@ def get_mathematical_vertex(vertice_with_names):
     coordinate and the mathematical coordinate.
     :return: A mathematical vertex ready for calculations.
     """
-    return np.array([vertice_with_names[0][1], vertice_with_names[1][1],
-                     vertice_with_names[2][1], vertice_with_names[3][1]])
+    res = np.array([])
+    for i in range(len(vertice_with_names)):
+        res = np.append(res, [vertice_with_names[i][1]])
+    return res
 
 
 def is_value_in_range(value, val_range):
@@ -702,6 +820,7 @@ class Norm:
     """
     Class for one Norm.
     """
+
     def __init__(self, o_vals, r_vals, s_vals, t_vals, hierarchy, starttime, norm_type, identifier):
         """
         Norms are hyperrectangles https://de.wikipedia.org/wiki/Hyperrechteck
@@ -782,7 +901,18 @@ class Norm:
         :return: The calculated minimal distance.
         """
         min_dist = None
+        case_vector = get_mathematical_vertex((case.coordinates[NormSystem.dim_o],
+                                               case.coordinates[NormSystem.dim_r],
+                                               case.coordinates[NormSystem.dim_s],
+                                               case.coordinates[NormSystem.dim_t]))
         # calculate minimal distance from any face
+        if len(self.faces) == 0:  # happens if a norm has equal start and end point in all dimensions
+            # distance must be calculated from the point
+            norm_vector = get_mathematical_vertex((self.start_values[NormSystem.dim_o],
+                                                   self.start_values[NormSystem.dim_r],
+                                                   self.start_values[NormSystem.dim_s],
+                                                   self.start_values[NormSystem.dim_t]))
+            min_dist = vector_length(case_vector - norm_vector)
         for (o_range, r_range, s_range, t_range) in self.faces:
             face_vertices = []
             for o in o_range:
@@ -800,10 +930,6 @@ class Norm:
             # vectors should already be ordinal as we have a hyperrectangle
             ordinal_b_vector = gram_schmidt_2(base=a_vector, new_vector=b_vector)
 
-            case_vector = get_mathematical_vertex((case.coordinates[NormSystem.dim_o],
-                                                   case.coordinates[NormSystem.dim_r],
-                                                   case.coordinates[NormSystem.dim_s],
-                                                   case.coordinates[NormSystem.dim_t]))
             # ordinal vector from plane to the case
             ordinal_case_vector = gram_schmidt_3(base=a_vector, ordinal_vector=ordinal_b_vector,
                                                  new_vector=case_vector - stuetz_vector)

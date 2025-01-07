@@ -3,3 +3,10 @@ venv
 __pycache__
 visualisation/figures
 visualisation/figures_detailed
+build/gui/localpycs
+visualisation/Logo.png
+visualisation/icon.png
+gui.spec
+build
+dist
+output

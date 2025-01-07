@@ -1,4 +1,4 @@
-from visualisation.NormSystem import NormSystem, get_generic_h_scale, get_generic_dim_scale, change_color
+from NormSystem import NormSystem, get_generic_h_scale, get_generic_dim_scale, change_color
 
 o_scale = get_generic_dim_scale(dim=NormSystem.dim_o, num_entries=9)
 r_scale = get_generic_dim_scale(dim=NormSystem.dim_r, num_entries=4)
@@ -25,26 +25,26 @@ def outside(norm_system):
                          s_vals=(s_scale[4], s_scale[5]), t_vals=(t_scale[3], t_scale[3]),
                          hierarchy=h_scale[0], starttime='99', norm_type=NormSystem.type_prohib,
                          identifier='\\alpha')
-    norm_system.draw_dims_two(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
-                              dims_two=(NormSystem.dim_t, NormSystem.dim_r),
-                              saveidentifier=saveid, detailed=False)
-    norm_system.draw_dims_two(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
-                              dims_two=(NormSystem.dim_t, NormSystem.dim_r),
-                              saveidentifier=saveid, detailed=True)
-    norm_system.draw_dims_one(saveidentifier=saveid, detailed=False)
-    norm_system.draw_dims_one(saveidentifier=saveid, detailed=True)
+    norm_system.draw_dims_two_all(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
+                                  dims_two=(NormSystem.dim_t, NormSystem.dim_r),
+                                  saveidentifier=saveid, detailed=False)
+    norm_system.draw_dims_two_all(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
+                                  dims_two=(NormSystem.dim_t, NormSystem.dim_r),
+                                  saveidentifier=saveid, detailed=True)
+    norm_system.draw_dims_one_all(saveidentifier=saveid, detailed=False)
+    norm_system.draw_dims_one_all(saveidentifier=saveid, detailed=True)
 
     # two cases
     saveid = 'outside_simple_two_cases'
     norm_system.add_case(o_val=o_scale[0], r_val=r_scale[3], s_val=s_scale[0], t_val=t_scale[0])
-    norm_system.draw_dims_two(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
-                              dims_two=(NormSystem.dim_t, NormSystem.dim_r),
-                              saveidentifier=saveid, detailed=False)
-    norm_system.draw_dims_two(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
-                              dims_two=(NormSystem.dim_t, NormSystem.dim_r),
-                              saveidentifier=saveid, detailed=True)
-    norm_system.draw_dims_one(saveidentifier=saveid, detailed=False)
-    norm_system.draw_dims_one(saveidentifier=saveid, detailed=True)
+    norm_system.draw_dims_two_all(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
+                                  dims_two=(NormSystem.dim_t, NormSystem.dim_r),
+                                  saveidentifier=saveid, detailed=False)
+    norm_system.draw_dims_two_all(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
+                                  dims_two=(NormSystem.dim_t, NormSystem.dim_r),
+                                  saveidentifier=saveid, detailed=True)
+    norm_system.draw_dims_one_all(saveidentifier=saveid, detailed=False)
+    norm_system.draw_dims_one_all(saveidentifier=saveid, detailed=True)
 
     # with more norms
     saveid = 'outside_complex'
@@ -56,14 +56,14 @@ def outside(norm_system):
                          s_vals=(s_scale[0], s_scale[0]), t_vals=(t_scale[1], t_scale[2]),
                          hierarchy=h_scale[0], starttime='01', norm_type=NormSystem.type_perm,
                          identifier='\\gamma')
-    norm_system.draw_dims_two(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
-                              dims_two=(NormSystem.dim_t, NormSystem.dim_r), detailed=False,
-                              saveidentifier=saveid)
-    norm_system.draw_dims_two(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
-                              dims_two=(NormSystem.dim_t, NormSystem.dim_r), detailed=True,
-                              saveidentifier=saveid)
-    norm_system.draw_dims_one(saveidentifier=saveid, detailed=False)
-    norm_system.draw_dims_one(saveidentifier=saveid, detailed=True)
+    norm_system.draw_dims_two_all(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
+                                  dims_two=(NormSystem.dim_t, NormSystem.dim_r), detailed=False,
+                                  saveidentifier=saveid)
+    norm_system.draw_dims_two_all(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
+                                  dims_two=(NormSystem.dim_t, NormSystem.dim_r), detailed=True,
+                                  saveidentifier=saveid)
+    norm_system.draw_dims_one_all(saveidentifier=saveid, detailed=False)
+    norm_system.draw_dims_one_all(saveidentifier=saveid, detailed=True)
 
 
 def subsumption(norm_system):
@@ -91,14 +91,14 @@ def subsumption(norm_system):
     norm_system.add_case(o_val=o_scale[3], r_val=r_scale[2], s_val=s_scale[2], t_val=t_scale[3])
 
     saveid = 'subsumption'
-    norm_system.draw_dims_two(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
-                              dims_two=(NormSystem.dim_t, NormSystem.dim_r),
-                              saveidentifier=saveid, detailed=False)
-    norm_system.draw_dims_two(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
-                              dims_two=(NormSystem.dim_t, NormSystem.dim_r),
-                              saveidentifier=saveid, detailed=True)
-    norm_system.draw_dims_one(saveidentifier=saveid, detailed=False)
-    norm_system.draw_dims_one(saveidentifier=saveid, detailed=True)
+    norm_system.draw_dims_two_all(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
+                                  dims_two=(NormSystem.dim_t, NormSystem.dim_r),
+                                  saveidentifier=saveid, detailed=False)
+    norm_system.draw_dims_two_all(dims_one=(NormSystem.dim_o, NormSystem.dim_s),
+                                  dims_two=(NormSystem.dim_t, NormSystem.dim_r),
+                                  saveidentifier=saveid, detailed=True)
+    norm_system.draw_dims_one_all(saveidentifier=saveid, detailed=False)
+    norm_system.draw_dims_one_all(saveidentifier=saveid, detailed=True)
 
 
 if __name__ == "__main__":
