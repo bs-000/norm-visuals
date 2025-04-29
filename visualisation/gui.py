@@ -175,6 +175,21 @@ def clear_layout(layout):
                 clear_layout(item.layout())
 
 
+def insert_linebreaks_in_tick_label(text):
+    words = text.split()
+    rough_max_length = 15
+    current_length = 0
+    res = []
+    for i in range(len(words)):
+        current_length += len(words[i])
+        if current_length > rough_max_length:
+            res.append(words[i]+'\n')
+            current_length = 0
+        else:
+            res.append(words[i])
+    return ' '.join(res)
+
+
 class MainWindow(QMainWindow):
 
     def __init__(self):
@@ -421,15 +436,15 @@ class MainWindow(QMainWindow):
             h_layout.addWidget(delete_button)
 
             latex_expression = '$ \\mathbf{' + norm.identifier + '} ('+norm.norm_type+'): ($' + \
-                               norm.start_values[NormSystem.dim_o][0] + '$,$' + \
-                               norm.end_values[NormSystem.dim_o][0] + \
-                               '$), ($' + norm.start_values[NormSystem.dim_r][0] + '$,$' + \
-                               norm.end_values[NormSystem.dim_r][0] + \
-                               '$), ($' + norm.start_values[NormSystem.dim_s][0] + '$,$' + \
-                               norm.end_values[NormSystem.dim_s][0] + \
-                               '$), ($' + norm.start_values[NormSystem.dim_t][0] + '$,$' + \
-                               norm.end_values[NormSystem.dim_t][0] + '$), $' +\
-                               norm.hierarchy[0] +\
+                               norm.start_values[NormSystem.dim_o][0].replace('\n','') + '$,$' + \
+                               norm.end_values[NormSystem.dim_o][0].replace('\n','') + \
+                               '$), ($' + norm.start_values[NormSystem.dim_r][0].replace('\n','') + '$,$' + \
+                               norm.end_values[NormSystem.dim_r][0].replace('\n','') + \
+                               '$), ($' + norm.start_values[NormSystem.dim_s][0].replace('\n','') + '$,$' + \
+                               norm.end_values[NormSystem.dim_s][0].replace('\n','') + \
+                               '$), ($' + norm.start_values[NormSystem.dim_t][0].replace('\n','') + '$,$' + \
+                               norm.end_values[NormSystem.dim_t][0].replace('\n','') + '$), $' +\
+                               norm.hierarchy[0].replace('\n','') +\
                                '$, '+norm.starttime+'$'
             pix_map = latex_to_qpixmap(latex_expression)
             norm_label = QLabel()
@@ -459,10 +474,10 @@ class MainWindow(QMainWindow):
             h_layout.addWidget(delete_button)
 
             latex_expression = '$ \\mathbf{' + case.identifier.replace('$', '') + '}: $' + \
-                               case.coordinates[NormSystem.dim_o][0] + \
-                               '$, $' + case.coordinates[NormSystem.dim_r][0] + \
-                               '$, $' + case.coordinates[NormSystem.dim_s][0] + \
-                               '$, $' + case.coordinates[NormSystem.dim_t][0]
+                               case.coordinates[NormSystem.dim_o][0].replace('\n','') + \
+                               '$, $' + case.coordinates[NormSystem.dim_r][0].replace('\n','') + \
+                               '$, $' + case.coordinates[NormSystem.dim_s][0].replace('\n','') + \
+                               '$, $' + case.coordinates[NormSystem.dim_t][0].replace('\n','')
             pix_map = latex_to_qpixmap(latex_expression)
             case_label = QLabel()
             case_label.setPixmap(pix_map)
@@ -712,7 +727,7 @@ class MainWindow(QMainWindow):
         """
         layout = QHBoxLayout()
         layout.addWidget(get_one_letter_normal_label(dim_id))
-        regex_dim_input = "[A-Za-z1-9${_-} ]+(, [A-Za-z1-9${_-} ]+)*"
+        regex_dim_input = "[A-Za-z1-90<=>${_-} ]+(, [A-Za-z1-90<=>${_-} ]+)*"
         setup_input_field(line_edit=line_edit, placeholder_text=placeholder_text, validator_regex=regex_dim_input)
         line_edit.textChanged.connect(lambda state: self.set_dim_raw_text(dim=dim_id, text=state))
         layout.addWidget(line_edit)
@@ -727,6 +742,7 @@ class MainWindow(QMainWindow):
         """
         scale = self.dim_raw_texts[dimension].split(', ')
         scale = [' '.join(['$' + word + '$' for word in val.split()]) for val in scale if val != '']
+        scale = [insert_linebreaks_in_tick_label(entry) for entry in scale]
         num_entries = len(scale)
         error_messages = []
         if num_entries == 0:
