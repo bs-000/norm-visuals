@@ -10,3 +10,6 @@ gui.spec
 build
 dist
 output
+visualisation/classic
+visualisation/interactive
+visualisation/classic_detailed

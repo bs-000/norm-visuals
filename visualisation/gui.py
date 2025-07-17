@@ -13,7 +13,8 @@ import matplotlib.pyplot as plt
 
 import sys
 
-from visualisation.NormSystem import NormSystem, get_generic_dim_scale, get_generic_h_scale, reset_colors, change_color
+from visualisation.NormSystem import NormSystem, get_generic_dim_scale, get_generic_h_scale, reset_colors, change_color, \
+    display_classic_detailed
 
 dim_x_str = 'X'
 dim_y_str = 'Y'
@@ -806,7 +807,7 @@ class MainWindow(QMainWindow):
         if self.norm_system is not None:
             self.figure.clear()
             if self.show_all_one_dim:
-                self.norm_system.draw_dims_one_all(figure=self.figure, detailed=self.detailed)
+                self.norm_system.draw_dims_one_all(figure=self.figure, display_type=display_classic_detailed)
             elif self.show_both_two_dims and self.y_axis != none_selected_str:
                 dims_one = (self.x_axis, self.y_axis)
                 other_dims = [key for key in display_names
