@@ -14,6 +14,7 @@ The file *ViNo.exe* is a windows executable of the gui for technical laymen.
 
 New features:
 * 2025-07-17: Added interactive one-, two- and three-dimensional normative diagrams. Not yet integrated in the gui, but usable as displayed in the examples.
+* 2025-09-04: Added validity diagrams. Updated graphical interface with validity diagrams and interactive figures.
 
 Publications: 
 * D. Sasdelli and A.T.G.Trivisonno:   [*Normative Diagrams as a Tool for Representing Legal Systems*](https://link.springer.com/article/10.1007/s12626-023-00144-0), The Review of Socionetwork Strategies.
